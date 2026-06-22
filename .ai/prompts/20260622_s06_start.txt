@@ -1,0 +1,7 @@
+we are on new branch 's06_subagent'
+
+please read ~/workspaces/learn-claude-code-variations/learn-claude-code/s06_subagent/README.en.md
+
+present a plan for executing that highlights any tradeoffs or other considerations and save in .ai/reports/
+
+let me know if you have any questions
