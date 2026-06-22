@@ -1,2 +1,2 @@
-# Reports for the human
-Requested research, information, and questions for the human go here
+# AI Slop
+keep "artifacts" of AI use contained in one place
