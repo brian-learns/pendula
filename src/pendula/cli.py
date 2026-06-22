@@ -1,13 +1,13 @@
-"""CLI entry point for Pendula — REPL loop with configurable log level."""
+"""CLI entry point for Pendula — parses args then delegates to ``run_repl()``."""
 
 import argparse
 
-from .agent import agent_loop
 from .logging import configure_logging
+from .repl import run_repl
 
 
 def main() -> None:
-    """REPL entry point: parse CLI args, configure logging, run agent loop."""
+    """Parse CLI args, configure logging, then start the REPL."""
     parser = argparse.ArgumentParser(description="Pendula coding agent REPL")
     parser.add_argument(
         "--loglevel",
@@ -17,21 +17,4 @@ def main() -> None:
     )
     args = parser.parse_args()
     configure_logging(level=args.loglevel)
-
-    print("s02: Tool Use — typed dispatch via Pydantic models")
-    print("输入问题,回车发送。输入 q 退出。\n")
-
-    history: list[dict[str, str]] = []
-    while True:
-        try:
-            query = input("\033[36ms02 >> \033[0m")
-        except (EOFError, KeyboardInterrupt):
-            break
-        if query.strip().lower() in ("q", "exit", ""):
-            break
-        history.append({"role": "user", "content": query})
-        agent_loop(history)
-        last_msg = history[-1]
-        if last_msg["role"] == "assistant" and last_msg["content"]:
-            print(last_msg["content"])
-        print()
+    run_repl()

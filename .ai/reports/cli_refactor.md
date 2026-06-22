@@ -71,8 +71,10 @@ def run_repl() -> None:
 
 ## Status
 
-**Deferred** — not critical for current functionality.  
-Revisit when:
-- Adding a second entry point (e.g., `pendula --batch file.json`)
-- Writing REPL tests
-- Cleaning up `__main__.py`
+**✅ Resolved** — `run_repl()` extracted to `src/pendula/repl.py`.
+
+Changes made:
+1. Created `src/pendula/repl.py` with `run_repl()` — the REPL loop as a standalone function
+2. `cli.py` now parses args then calls `run_repl()`
+3. `__main__.py` stays unchanged (calls `cli.main()` → `run_repl()`)
+4. Added `tests/test_repl.py` with 6 tests exercising the loop

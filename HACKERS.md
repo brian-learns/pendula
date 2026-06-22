@@ -15,7 +15,8 @@ They keep the codebase consistent, safe, and easy to maintain.
 | `models.py` *(future)* | Pydantic argument models | `pydantic` |
 | `tools.py` | Tool handler functions + registry | `.config`, `.models` |
 | `agent.py` | Agent loop (dispatch tool calls) | `.config`, `.tools` |
-| `cli.py` | REPL / CLI entry point | `.agent` |
+| `repl.py` | Reusable REPL loop | `.agent` |
+| `cli.py` | CLI entry point (argparse → `run_repl()`) | `.repl`, `.logging` |
 
 ### Rules
 
