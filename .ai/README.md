@@ -1,2 +1,2 @@
-# AI Slop
-keep "artifacts" of AI use contained in one place
+# ai junk drawer
+isolate meta-coordination here, will evolve as needed
