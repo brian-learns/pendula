@@ -6,6 +6,8 @@ Hook calls are inserted at key points:
 - ``Stop`` when the loop exits
 """
 
+from types import SimpleNamespace
+
 from openai.types.chat import ChatCompletionMessageFunctionToolCall
 
 from .config import MAX_TOKENS, MODEL, SYSTEM, get_client
@@ -58,15 +60,18 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
                 model, handler = entry
                 args = model.model_validate_json(tc.function.arguments)
 
+                # Wrap args in a block-like object for hooks (expects .name, .input)
+                tool_block = SimpleNamespace(name=name, input=dict(args))
+
                 # Hook: PreToolUse — can block the tool call
-                blocked = trigger_hooks("PreToolUse", args)
+                blocked = trigger_hooks("PreToolUse", tool_block)
                 if blocked:
                     output = str(blocked)
                 else:
                     output = handler(**dict(args))
 
                 # Hook: PostToolUse — observe the result
-                trigger_hooks("PostToolUse", args, output)
+                trigger_hooks("PostToolUse", tool_block, output)
 
             _log.info("tool.result", tool=name, length=len(output))
             results.append({"role": "tool", "tool_call_id": tc.id, "content": output})
