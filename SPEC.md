@@ -25,7 +25,8 @@ no lesson rewrites the previous one.
 | s02 — Adding a tool means adding one handler | ✅ Merged into `models.py`, `tools.py` | 5 tools (bash, read, write, edit, glob) via typed dispatch |
 | s04 — Hook around the loop, never rewrite the loop | ✅ Merged into `hooks.py`, `agent.py`, `repl.py` | Hook system + permission hooks (absorbed s03) |
 | s05 — An agent without a plan drifts | ✅ Merged into `tools.py`, `agent.py`, `models.py` | ``todo_write`` tool + nag reminder |
-| 6–20 | ❌ Not started | Branches from `main` |
+| s06 — Break large tasks into small ones with clean context | ✅ Merged into `subagent.py`, `tools.py`, `models.py` | ``task`` tool + sub-agent loop |
+| 7–20 | ❌ Not started | Branches from `main` |
 
 ## Lesson roadmap (s05–s20)
 
@@ -61,6 +62,8 @@ tools.py   (depends on .config, .models, .logging)
     ↓
 hooks.py   (depends on .config)
     ↓
+subagent.py (depends on .config, .hooks, .tools via deferred import)
+    ↓
 agent.py   (depends on .config, .hooks, .tools, .logging)
     ↓
 repl.py    (depends on .agent, .hooks)
@@ -76,7 +79,8 @@ src/pendula/
 ├── models.py      — Pydantic argument models for tools
 ├── tools.py       — tool handlers + @tool decorator + registries
 ├── hooks.py       — hook registry + built-in permission hooks
-├── agent.py       — agent loop (dispatch loop + hook triggers)
+├── subagent.py    — sub-agent loop + spawn_subagent
+├── agent.py       — agent loop (dispatch loop + hook triggers + nag reminder)
 ├── logging.py     — structured logging (structlog)
 ├── repl.py        — reusable REPL loop
 ├── cli.py         — CLI entry point with --loglevel
@@ -88,7 +92,7 @@ src/pendula/
 
 - **`make test`** must pass before merge (ruff + bandit + vulture + refurb + interrogate + pytest)
 - **`HACKERS.md`** governs AI-agent and human coding rules
-- **No circular imports** — dependency direction is `config → models → tools → hooks → agent → repl → cli`
+- **No circular imports** — dependency direction is `config → models → tools → hooks → subagent → agent → repl → cli`
 - **New lessons add modules, never rewrite existing ones**
 - **`s02.py` is gone** — all code lives in the module structure above
 - **Branch per lesson** — branches are named `s<number>_<descriptor>`

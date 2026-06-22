@@ -29,6 +29,7 @@ from .models import (
     EditFileArgs,
     GlobArgs,
     ReadFileArgs,
+    TaskArgs,
     TodoWriteArgs,
     WriteFileArgs,
 )
@@ -216,3 +217,29 @@ def run_todo_write(todos: list) -> str:
         lines.append(f"  [{icon}] {t['content']}")
     print("\n".join(lines))
     return f"Updated {len(CURRENT_TODOS)} tasks"
+
+
+# ═══════════════════════════════════════════════════════════
+#  Task tool (deferred import to avoid circular dependency)
+# ═══════════════════════════════════════════════════════════
+
+
+def _register_task_tool() -> None:
+    """Register the ``task`` tool handler.
+
+    Uses a deferred import to break the circular dependency between
+    ``tools.py`` and ``subagent.py`` (subagent imports tools at call time).
+    """
+    from .subagent import spawn_subagent
+
+    task_def = openai.pydantic_function_tool(
+        name="task",
+        description="Launch a sub-agent to handle a complex subtask. "
+        "Returns only the final conclusion.",
+        model=TaskArgs,
+    )
+    TOOLS.append(task_def)
+    TOOL_HANDLERS["task"] = (TaskArgs, spawn_subagent)
+
+
+_register_task_tool()

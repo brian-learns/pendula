@@ -55,3 +55,11 @@ class TodoWriteArgs(BaseModel):
     """Input model for the ``todo_write`` tool."""
 
     todos: list[TodoItem] = Field(..., description="List of tasks with statuses.")
+
+
+class TaskArgs(BaseModel):
+    """Input model for the ``task`` tool."""
+
+    description: str = Field(
+        ..., description="The subtask description for the sub-agent."
+    )
