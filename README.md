@@ -4,7 +4,9 @@ A lightweight Python coding agent that uses OpenAI function-calling (tool use) t
 
 Based on [Learn Claude Code -- Harness Engineering for Real Agents](https://github.com/shareAI-lab/learn-claude-code) thanks [shareAI-lab](https://huggingface.co/shareAI)
 
-Just basically me learning to vibe code with [ds4-agent](https://github.com/antirez/ds4/) \*.  I'm on step `s02` right now, I'm going to do a branch for each chapter.
+I'm on step `s02` right now, I'm going to do a tag or branch for each chapter.
+
+Just basically me learning to vibe code with [ds4-agent](https://github.com/antirez/ds4/) \*.  
 
 \* I've got my own [`SearchXNG` branch](https://github.com/brian-learns/ds4/tree/SearXNG)
 
