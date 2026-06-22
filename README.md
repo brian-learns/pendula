@@ -8,6 +8,9 @@ Just basically me learning to vibe code with [ds4-agent](https://github.com/anti
 
 \* I've got my own [`SearchXNG` branch](https://github.com/brian-learns/ds4/tree/SearXNG)
 
+## Main code
+[`src/pendula`](src/pendula) has the agent files.
+
 
 ## Quick start
 
@@ -38,3 +41,8 @@ MIT — see LICENSE.
 ## Python
 
 I'm also learning about `uv init --package` and modern python best practices.
+
+## Refactoring note
+I should have made a commit to demonstrait the initial state.  I started with `uv init --package pendula` and I took a version of `s02_tool_use.py` and put in it `src/pendula` and had `__main__.py` basically just import `s02_tool_use`.  I forget the exact way I got in hooked into main but I got it working in the fresh uv init.  Then I asked the ai in google search for an aggressive `make test` that does a lot of static analysis.  It had a lot of errors.  I asked ds4-agent to fix all the errors in `make test`.  It realized on it's own that there were no real tests and created a bunch, and then worked till they all passed.  Once they passed, I asked it to refactor from one long `s02_tool_use.py` into multiple files.  After that, I didn the initial commit.  Next time I should commit *before* adding the tests and the refactor.
+
+I know some people like one long file for this type of stuff, but I understand things better with more short files, and ds4-agent seems better at editing shorter files.
