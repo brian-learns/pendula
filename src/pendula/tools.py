@@ -24,7 +24,14 @@ from pydantic import BaseModel
 
 from .config import WORKDIR
 from .logging import get_logger, log_call
-from .models import BashArgs, EditFileArgs, GlobArgs, ReadFileArgs, WriteFileArgs
+from .models import (
+    BashArgs,
+    EditFileArgs,
+    GlobArgs,
+    ReadFileArgs,
+    TodoWriteArgs,
+    WriteFileArgs,
+)
 
 # ═══════════════════════════════════════════════════════════
 #  Registry
@@ -168,3 +175,44 @@ def run_glob(pattern: str) -> str:
         return "\n".join(results) if results else "(no matches)"
     except Exception as e:
         return f"Error: {e}"
+
+
+# ═══════════════════════════════════════════════════════════
+#  TODO system
+# ═══════════════════════════════════════════════════════════
+
+CURRENT_TODOS: list[dict] = []
+
+
+def reset_todos() -> None:
+    """Clear the global TODO list (used in tests)."""
+    global CURRENT_TODOS
+    CURRENT_TODOS = []
+
+
+@tool(
+    name="todo_write",
+    description="Create and manage a task list. Call this first to plan steps, "
+    "then update statuses as you work.",
+    model=TodoWriteArgs,
+)
+def run_todo_write(todos: list) -> str:
+    """Store *todos* in module-level state and print progress.
+
+    *todos* items may be dicts or Pydantic ``TodoItem`` objects.
+    """
+    global CURRENT_TODOS
+    # Convert to plain dicts for uniform handling
+    CURRENT_TODOS = [
+        {"content": t["content"], "status": t["status"]}
+        if isinstance(t, dict)
+        else {"content": t.content, "status": t.status}
+        for t in todos
+    ]
+
+    lines = ["\n## Current Tasks"]
+    for t in CURRENT_TODOS:
+        icon = {"pending": " ", "in_progress": "▸", "completed": "✓"}[t["status"]]
+        lines.append(f"  [{icon}] {t['content']}")
+    print("\n".join(lines))
+    return f"Updated {len(CURRENT_TODOS)} tasks"

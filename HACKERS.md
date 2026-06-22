@@ -13,9 +13,9 @@ They keep the codebase consistent, safe, and easy to maintain.
 |--------|---------------|----------------|
 | `config.py` | Env loading, shared globals (`WORKDIR`, `MODEL`, `client`) | — (leaf module) |
 | `models.py` | Pydantic argument models | `pydantic` |
-| `tools.py` | Tool handler functions + registry | `.config`, `.models` |
+| `tools.py` | Tool handler functions + registry + ``CURRENT_TODOS`` | `.config`, `.models` |
 | `hooks.py` | Hook registry + built-in permission hooks | `.config` |
-| `agent.py` | Agent loop (dispatch tool calls + hook triggers) | `.config`, `.hooks`, `.tools` |
+| `agent.py` | Agent loop (dispatch + hook triggers + nag reminder) | `.config`, `.hooks`, `.tools` |
 | `repl.py` | Reusable REPL loop | `.agent` |
 | `cli.py` | CLI entry point (argparse → `run_repl()`) | `.repl`, `.logging` |
 
@@ -23,7 +23,7 @@ They keep the codebase consistent, safe, and easy to maintain.
 
 - **No circular imports.** Modules import only from modules listed in the table above.
 - **No `__init__.py` re-exports of internal symbols** beyond the public API (`main`, `__version__`).
-- **No mutable module-level state** beyond `config.py` globals. Tools are stateless functions.
+- **Mutable module-level state** is limited to ``config.py`` globals and ``tools.CURRENT_TODOS``. Tools are otherwise stateless.
 
 ---
 

@@ -1,0 +1,11 @@
+re:
+|### Pending Next Steps
+|- User plans to test the s04_hooks branch with the local llama.cpp backend.
+DONE: I've landed s04_hooks onto main branch, and cwd is on main
+|- s05 (step planning) — next lesson branch.
+please read ~/workspaces/learn-claude-code-variations/learn-claude-code/s05_todo_write/README.en.md
+
+present a plan for executing that highlights any tradeoffs or other considerations and save in .ai/reports/
+
+let me know if you have any questions
+
