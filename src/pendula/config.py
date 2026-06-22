@@ -25,7 +25,10 @@ WORKDIR = Path.cwd()
 MODEL = os.environ["DEFAULT_MODEL"]
 SYSTEM = (
     f"You are a coding agent at {WORKDIR}. "
-    "Use tools to solve tasks. Act, don't explain."
+    "Use tools to solve tasks. Act, don't explain.\n\n"
+    "Before starting any complex task, use todo_write to list the steps. "
+    "Update todo statuses as you work. "
+    "If you receive a reminder to update todos, do so immediately."
 )
 
 # Maximum tokens per completion — can be overridden via env

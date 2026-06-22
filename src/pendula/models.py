@@ -42,3 +42,16 @@ class GlobArgs(BaseModel):
     """Input model for the ``glob`` tool."""
 
     pattern: str = Field(..., description="The glob pattern to search for.")
+
+
+class TodoItem(BaseModel):
+    """A single item in a TODO list."""
+
+    content: str = Field(..., description="Task description.")
+    status: str = Field(..., description="Status: pending, in_progress, or completed.")
+
+
+class TodoWriteArgs(BaseModel):
+    """Input model for the ``todo_write`` tool."""
+
+    todos: list[TodoItem] = Field(..., description="List of tasks with statuses.")

@@ -13,12 +13,15 @@ from pendula.models import (
     WriteFileArgs,
 )
 from pendula.tools import (
+    CURRENT_TODOS,
     TOOLS,
     TOOL_HANDLERS,
+    reset_todos,
     run_bash,
     run_edit,
     run_glob,
     run_read,
+    run_todo_write,
     run_write,
     safe_path,
 )
@@ -144,6 +147,26 @@ class TestRunGlob:
         assert "(no matches)" in result
 
 
+class TestRunTodoWrite:
+    def test_stores_todos_and_prints_progress(self, capsys):
+        todos = [
+            {"content": "Step 1", "status": "pending"},
+            {"content": "Step 2", "status": "in_progress"},
+        ]
+        result = run_todo_write(todos)
+        assert "Updated 2 tasks" in result
+        assert CURRENT_TODOS == todos
+
+        captured = capsys.readouterr()
+        assert "## Current Tasks" in captured.out
+        assert "Step 1" in captured.out
+        assert "Step 2" in captured.out
+
+    def test_reset_todos_clears_list(self):
+        reset_todos()
+        assert CURRENT_TODOS == []
+
+
 class TestPydanticModels:
     def test_bash_args(self):
         a = BashArgs(command="echo hi")
@@ -175,14 +198,14 @@ class TestPydanticModels:
 
 
 class TestToolDefinitions:
-    def test_TOOLS_has_five(self):
-        assert len(TOOLS) == 5
+    def test_TOOLS_has_six(self):
+        assert len(TOOLS) == 6
 
-    def test_TOOL_HANDLERS_has_five(self):
-        assert len(TOOL_HANDLERS) == 5
+    def test_TOOL_HANDLERS_has_six(self):
+        assert len(TOOL_HANDLERS) == 6
 
     def test_TOOL_HANDLERS_keys(self):
-        expected = {"bash", "read_file", "write_file", "edit_file", "glob"}
+        expected = {"bash", "read_file", "write_file", "edit_file", "glob", "todo_write"}
         assert set(TOOL_HANDLERS) == expected
 
     def test_handler_entries_are_pairs(self):

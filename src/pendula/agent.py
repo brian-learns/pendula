@@ -17,6 +17,8 @@ from .tools import TOOL_HANDLERS, TOOLS
 
 _log = get_logger("pendula.agent")
 
+REMINDER_INTERVAL = 3
+
 
 def agent_loop(messages: list[dict[str, str]]) -> None:
     """Run the agent loop: send messages, handle tool calls, repeat.
@@ -25,8 +27,13 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
     *messages* is mutated in-place with each exchange.
     Hook events fire around tool execution (``PreToolUse``, ``PostToolUse``)
     and when the loop ends (``Stop``).
+
+    A nag reminder is injected when the model hasn't called ``todo_write``
+    for ``REMINDER_INTERVAL`` consecutive rounds.
     """
     client = get_client()
+    rounds_since_todo = 0
+
     while True:
         response = client.chat.completions.create(
             model=MODEL,
@@ -47,11 +54,16 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
             return
 
         results = []
+        called_todo = False
+
         for tc in msg.tool_calls:
             if not isinstance(tc, ChatCompletionMessageFunctionToolCall):
                 continue
             name = tc.function.name
             _log.info("tool.call", tool=name)
+
+            if name == "todo_write":
+                called_todo = True
 
             entry = TOOL_HANDLERS.get(name)
             if entry is None:
@@ -77,3 +89,18 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
             results.append({"role": "tool", "tool_call_id": tc.id, "content": output})
 
         messages.extend(results)
+
+        # Nag reminder: if todo_write wasn't called this round, increment counter
+        if called_todo:
+            rounds_since_todo = 0
+        else:
+            rounds_since_todo += 1
+
+        if rounds_since_todo >= REMINDER_INTERVAL and messages:
+            messages.append(
+                {
+                    "role": "user",
+                    "content": "<reminder>Update your todos.</reminder>",
+                }
+            )
+            rounds_since_todo = 0

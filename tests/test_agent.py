@@ -110,3 +110,31 @@ def test_agent_loop_unknown_tool(mock_get_client):
     tool_results = [m for m in messages if m.get("role") == "tool"]
     assert len(tool_results) == 1
     assert "Unknown" in tool_results[0]["content"]
+
+
+@patch("pendula.agent.get_client")
+def test_agent_loop_nag_reminder_after_three_rounds(mock_get_client):
+    """After 3 consecutive rounds without todo_write, a reminder should be injected."""
+    bash_call = _make_tool_call(
+        name="bash",
+        arguments='{"command":"echo round"}',
+    )
+    bash_msg = _make_message(content=None, tool_calls=[bash_call])
+    done_msg = _make_message(content="done", tool_calls=None)
+
+    # Simulate 3 rounds of bash calls, then a final round with no tool calls
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.side_effect = [
+        MagicMock(choices=[_make_choice(bash_msg)]),  # round 1: bash
+        MagicMock(choices=[_make_choice(bash_msg)]),  # round 2: bash
+        MagicMock(choices=[_make_choice(bash_msg)]),  # round 3: bash (triggers reminder)
+        MagicMock(choices=[_make_choice(done_msg)]),  # round 4: exit
+    ]
+    mock_get_client.return_value = mock_client
+
+    messages = [{"role": "user", "content": "do something"}]
+    agent_loop(messages)
+
+    # After 3 tool rounds, a user reminder should exist in messages
+    reminder_msgs = [m for m in messages if "reminder" in (m.get("content") or "")]
+    assert len(reminder_msgs) >= 1

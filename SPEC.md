@@ -24,7 +24,8 @@ no lesson rewrites the previous one.
 | s01 — One loop & Bash is all you need | ✅ Merged into `config.py`, `tools.py`, `agent.py` | Agent loop + `bash` tool |
 | s02 — Adding a tool means adding one handler | ✅ Merged into `models.py`, `tools.py` | 5 tools (bash, read, write, edit, glob) via typed dispatch |
 | s04 — Hook around the loop, never rewrite the loop | ✅ Merged into `hooks.py`, `agent.py`, `repl.py` | Hook system + permission hooks (absorbed s03) |
-| 5–20 | ❌ Not started | Branches from `main` |
+| s05 — An agent without a plan drifts | ✅ Merged into `tools.py`, `agent.py`, `models.py` | ``todo_write`` tool + nag reminder |
+| 6–20 | ❌ Not started | Branches from `main` |
 
 ## Lesson roadmap (s05–s20)
 
