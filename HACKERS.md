@@ -12,7 +12,7 @@ They keep the codebase consistent, safe, and easy to maintain.
 | Module | Responsibility | May import from |
 |--------|---------------|----------------|
 | `config.py` | Env loading, shared globals (`WORKDIR`, `MODEL`, `client`) | — (leaf module) |
-| `models.py` *(future)* | Pydantic argument models | `pydantic` |
+| `models.py` | Pydantic argument models | `pydantic` |
 | `tools.py` | Tool handler functions + registry | `.config`, `.models` |
 | `agent.py` | Agent loop (dispatch tool calls) | `.config`, `.tools` |
 | `repl.py` | Reusable REPL loop | `.agent` |
