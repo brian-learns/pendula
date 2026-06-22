@@ -196,10 +196,19 @@ def reset_todos() -> None:
     "then update statuses as you work.",
     model=TodoWriteArgs,
 )
-def run_todo_write(todos: list[dict]) -> str:
-    """Store *todos* in module-level state and print progress."""
+def run_todo_write(todos: list) -> str:
+    """Store *todos* in module-level state and print progress.
+
+    *todos* items may be dicts or Pydantic ``TodoItem`` objects.
+    """
     global CURRENT_TODOS
-    CURRENT_TODOS = todos
+    # Convert to plain dicts for uniform handling
+    CURRENT_TODOS = [
+        {"content": t["content"], "status": t["status"]}
+        if isinstance(t, dict)
+        else {"content": t.content, "status": t.status}
+        for t in todos
+    ]
 
     lines = ["\n## Current Tasks"]
     for t in CURRENT_TODOS:
