@@ -1,0 +1,41 @@
+CURRENT STATE:
+
+```
+make test
+```
+PASSES
+
+
+```
+$ tree -h --du
+[186K]  .
+├── [ 120]  env.example
+├── [1.1K]  LICENSE
+├── [1.4K]  Makefile
+├── [1.4K]  pyproject.toml
+├── [   0]  README.md
+├── [ 18K]  src
+│   └── [ 14K]  pendula
+│       ├── [   0]  agent.py
+│       ├── [ 655]  cli.py
+│       ├── [   0]  config.py
+│       ├── [ 301]  __init__.py
+│       ├── [  61]  __main__.py
+│       ├── [ 369]  pendula.py
+│       ├── [9.1K]  s02.py
+│       └── [   0]  tools.py
+└── [160K]  uv.lock
+
+ 207K used in 3 directories, 14 files
+```
+
+DESIRED STATE:
+
+ - s02.py is zero bytes
+ - agent.py has agent logic from s02.py
+ - tools.py has the tool stuff from s02.py
+ - config.py has configuration stuff from s02.py
+ - `make test` passes
+
+Background:
+  We are refactoring https://github.com/shareAI-lab/learn-claude-code/blob/main/s02_tool_use/code.py into python best practices

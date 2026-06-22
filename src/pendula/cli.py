@@ -1,4 +1,4 @@
-from .s02 import agent_loop
+from .agent import agent_loop
 
 
 def main() -> None:
