@@ -2,7 +2,7 @@
 
 A lightweight Python coding agent that uses OpenAI function-calling (tool use) to execute shell commands, read/write/edit files, and glob within a workspace directory.
 
-Based on [Learn Claude Code -- Harness Engineering for Real Agents][https://github.com/shareAI-lab/learn-claude-code] thanks [shareAI-lab](https://huggingface.co/shareAI)
+Based on [Learn Claude Code -- Harness Engineering for Real Agents](https://github.com/shareAI-lab/learn-claude-code) thanks [shareAI-lab](https://huggingface.co/shareAI)
 
 Just basically me learning to vibe code with [ds4-agent](https://github.com/antirez/ds4/) \*.  I'm on step `s02` right now, I'm going to do a branch for each chapter.
 
