@@ -1,0 +1,7 @@
+- There is a new file `PROJECT_SUMMARY.md` -- do we need that?
+- hooks.py is using print, should that use the logging system?
+
+
+> Removed — it was an artifact from the test run, not something we need.
+
+> About the print() in hooks.py: it's intentional. The permission hook is interactive (it calls input() for user approval), so print() is correct — logging would send the prompt to a log stream where the user wouldn't see it. The [HOOK] annotations (log_hook, context_inject_hook, summary_hook) are also user-facing feedback that should always show on the terminal, not filtered by log level. This matches the original s04 pattern.

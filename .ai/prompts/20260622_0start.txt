@@ -1,0 +1,14 @@
+For this next work session -- let's combine lessions s03 and s04 (or we could think of it as skipping s03)
+
+s03: Permission — Check Permissions Before Execution
+s03_permission/code.py
+
+s04: Hooks — Hang on the Loop, Don't Write into It
+s04_hooks/code.py
+
+Reseaerch: the permissions mechanism is sort of a toy example, what are better approaches?
+
+Please create a branch for this session and write a plan in .ai/reports
+
+Relaxed constaint:  You note "- New lessons add modules, never rewrite existing ones." 
+ If this means what I think it means, it shold be find to edit existing code modules like cli.py?

@@ -47,13 +47,10 @@ class TestRunBash:
         result = run_bash("echo hello world")
         assert result == "hello world"
 
-    def test_dangerous_blocked(self):
-        result = run_bash("rm -rf /")
-        assert "blocked" in result
-
-    def test_sudo_blocked(self):
-        result = run_bash("sudo ls")
-        assert "blocked" in result
+    def test_raw_bash_does_not_block(self):
+        """run_bash no longer blocks inline — permission hook handles that."""
+        result = run_bash("echo hello from raw")
+        assert result == "hello from raw"
 
     @patch("pendula.tools.subprocess.run")
     def test_timeout(self, mock_run):

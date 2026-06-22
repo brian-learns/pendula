@@ -23,70 +23,13 @@ no lesson rewrites the previous one.
 |--------|--------|-----------------|
 | s01 — One loop & Bash is all you need | ✅ Merged into `config.py`, `tools.py`, `agent.py` | Agent loop + `bash` tool |
 | s02 — Adding a tool means adding one handler | ✅ Merged into `models.py`, `tools.py` | 5 tools (bash, read, write, edit, glob) via typed dispatch |
-| s03–s20 | ❌ Not started | Branches from `main` |
+| s04 — Hook around the loop, never rewrite the loop | ✅ Merged into `hooks.py`, `agent.py`, `repl.py` | Hook system + permission hooks (absorbed s03) |
+| 5–20 | ❌ Not started | Branches from `main` |
 
----
-
-## Branch strategy
-
-Going forward **each lesson gets its own branch**, created from `main`:
-
-```
-s03_permission    ─▶  main
-s04_hooks          ─▶  main
-s05_todo_write     ─▶  main
-...
-```
-
-Each branch implements the lesson's mechanism, then is reviewed and merged.
-The `main` branch always contains the accumulated harness so far.
-
----
-
-## Architecture
-
-### Module layout (current)
-
-```
-src/pendula/
-├── config.py      — env loading, shared globals (WORKDIR, MODEL, client)
-├── models.py      — Pydantic argument models for tools
-├── tools.py       — tool handlers + @tool decorator + registries
-├── agent.py       — agent loop (dispatch loop)
-├── logging.py     — structured logging (structlog)
-├── cli.py         — REPL entry point with --loglevel
-├── __init__.py    — package entry
-└── __main__.py    — python -m support
-```
-
-### Dependency flow (no circular imports)
-
-```
-config.py  (leaf)
-    ↓
-models.py  (depends on pydantic only)
-    ↓
-tools.py   (depends on .config, .models, .logging)
-    ↓
-agent.py   (depends on .config, .tools, .logging)
-    ↓
-cli.py     (depends on .agent, .logging)
-```
-
-### Tool pattern
-
-Each tool = 1 handler function + 1 Pydantic model + 1 `@tool` decorator registration.
-New lessons will add new mechanisms (permissions, hooks, subagents, memory, etc.)
-without changing existing tools or the main loop.
-
----
-
-## Lesson roadmap (s03–s20)
+## Lesson roadmap (s05–s20)
 
 | # | Lesson title | Core mechanism |
 |---|-------------|----------------|
-| 3 | Set boundaries first, then grant freedom | Permission system — allow/deny/approve per tool |
-| 4 | Hook around the loop, never rewrite the loop | Extension points (before/after tool call) |
 | 5 | An agent without a plan drifts | Step planning — list steps before execution |
 | 6 | Big tasks split small, each subtask gets clean context | Subagents — spawn child agents for subtasks |
 | 7 | Load knowledge on demand, not upfront | Skill loading — lazy-load skill definitions |
@@ -106,11 +49,45 @@ without changing existing tools or the main loop.
 
 ---
 
+### Dependency flow (no circular imports)
+
+```
+config.py  (leaf)
+    ↓
+models.py  (depends on pydantic only)
+    ↓
+tools.py   (depends on .config, .models, .logging)
+    ↓
+hooks.py   (depends on .config)
+    ↓
+agent.py   (depends on .config, .hooks, .tools, .logging)
+    ↓
+repl.py    (depends on .agent, .hooks)
+    ↓
+cli.py     (depends on .repl, .logging)
+```
+
+### Module layout (current)
+
+```
+src/pendula/
+├── config.py      — env loading, shared globals (WORKDIR, MODEL, client)
+├── models.py      — Pydantic argument models for tools
+├── tools.py       — tool handlers + @tool decorator + registries
+├── hooks.py       — hook registry + built-in permission hooks
+├── agent.py       — agent loop (dispatch loop + hook triggers)
+├── logging.py     — structured logging (structlog)
+├── repl.py        — reusable REPL loop
+├── cli.py         — CLI entry point with --loglevel
+├── __init__.py    — package entry
+└── __main__.py    — python -m support
+```
+
 ## Key conventions
 
 - **`make test`** must pass before merge (ruff + bandit + vulture + refurb + interrogate + pytest)
 - **`HACKERS.md`** governs AI-agent and human coding rules
-- **No circular imports** — dependency direction is `config → models → tools → agent → cli`
+- **No circular imports** — dependency direction is `config → models → tools → hooks → agent → repl → cli`
 - **New lessons add modules, never rewrite existing ones**
 - **`s02.py` is gone** — all code lives in the module structure above
 - **Branch per lesson** — branches are named `s<number>_<descriptor>`
