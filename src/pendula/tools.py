@@ -79,11 +79,8 @@ def tool(name: str, description: str, model: Type[BaseModel]):
 def run_bash(command: str) -> str:
     """Execute a shell command inside the workspace directory.
 
-    Dangerous commands (rm -rf /, sudo, shutdown, etc.) are blocked.
+    Dangerous commands are blocked by the permission hook (see hooks.py).
     """
-    dangerous = ["rm -rf /", "sudo", "shutdown", "reboot", "> /dev/"]
-    if any(d in command for d in dangerous):
-        return "Error: Dangerous command blocked"
     try:
         r = subprocess.run(  # noqa: S602
             command,

@@ -1,11 +1,17 @@
 """Agent loop for the Pendula coding agent.
 
 Dispatches OpenAI function-calling tool calls to registered handlers.
+Hook calls are inserted at key points:
+- ``PreToolUse`` / ``PostToolUse`` around each tool execution
+- ``Stop`` when the loop exits
 """
+
+from types import SimpleNamespace
 
 from openai.types.chat import ChatCompletionMessageFunctionToolCall
 
 from .config import MAX_TOKENS, MODEL, SYSTEM, get_client
+from .hooks import trigger_hooks
 from .logging import get_logger
 from .tools import TOOL_HANDLERS, TOOLS
 
@@ -17,6 +23,8 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
 
     Continues until the model returns a non-tool-call response.
     *messages* is mutated in-place with each exchange.
+    Hook events fire around tool execution (``PreToolUse``, ``PostToolUse``)
+    and when the loop ends (``Stop``).
     """
     client = get_client()
     while True:
@@ -31,6 +39,11 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
         messages.append(msg.model_dump())
 
         if not msg.tool_calls:
+            # Loop is about to exit — fire Stop hooks
+            blocked = trigger_hooks("Stop", messages)
+            if blocked:
+                messages.append({"role": "user", "content": str(blocked)})
+                continue
             return
 
         results = []
@@ -46,7 +59,19 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
             else:
                 model, handler = entry
                 args = model.model_validate_json(tc.function.arguments)
-                output = handler(**dict(args))
+
+                # Wrap args in a block-like object for hooks (expects .name, .input)
+                tool_block = SimpleNamespace(name=name, input=dict(args))
+
+                # Hook: PreToolUse — can block the tool call
+                blocked = trigger_hooks("PreToolUse", tool_block)
+                if blocked:
+                    output = str(blocked)
+                else:
+                    output = handler(**dict(args))
+
+                # Hook: PostToolUse — observe the result
+                trigger_hooks("PostToolUse", tool_block, output)
 
             _log.info("tool.result", tool=name, length=len(output))
             results.append({"role": "tool", "tool_call_id": tc.id, "content": output})

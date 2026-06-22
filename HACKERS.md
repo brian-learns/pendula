@@ -14,7 +14,8 @@ They keep the codebase consistent, safe, and easy to maintain.
 | `config.py` | Env loading, shared globals (`WORKDIR`, `MODEL`, `client`) | — (leaf module) |
 | `models.py` | Pydantic argument models | `pydantic` |
 | `tools.py` | Tool handler functions + registry | `.config`, `.models` |
-| `agent.py` | Agent loop (dispatch tool calls) | `.config`, `.tools` |
+| `hooks.py` | Hook registry + built-in permission hooks | `.config` |
+| `agent.py` | Agent loop (dispatch tool calls + hook triggers) | `.config`, `.hooks`, `.tools` |
 | `repl.py` | Reusable REPL loop | `.agent` |
 | `cli.py` | CLI entry point (argparse → `run_repl()`) | `.repl`, `.logging` |
 
