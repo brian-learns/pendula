@@ -23,8 +23,8 @@ check:
 	@echo "🧼 [4/5] Refurb (Code Modernization)..."
 	uv run refurb src/
 	
-	# @echo "📝 [5/5] Interrogate (Docstring Coverage)..."
-	# uv run interrogate src/
+	@echo "📝 [5/5] Interrogate (Docstring Coverage)..."
+	uv run interrogate src/
 	@echo "✅ All static validation matrices passed."
 
 # 2. The "Test" Target: The master gate command that runs absolutely everything

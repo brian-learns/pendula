@@ -1,0 +1,12 @@
+# other_files.txt — Scratch Notes & Deferred Items
+
+Scratch space for observations, deferred tasks, and half-formed ideas
+that don't yet belong in reports or prompts.
+
+---
+
+## Deferred (from research report)
+
+- [ ] Investigate `pydantic.dataclasses` vs `BaseModel` for simpler model syntax
+- [ ] Move REPL logic into reusable `run_repl()` function (see cli_issue.md)
+- [ ] Add `conftest.py` for env isolation (done)

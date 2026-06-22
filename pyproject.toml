@@ -11,6 +11,7 @@ dependencies = [
     "dotenv>=0.9.9",
     "llm>=0.31",
     "openai>=2.43.0",
+    "structlog>=25.2.0",
 ]
 
 [project.scripts]

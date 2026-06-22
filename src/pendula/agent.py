@@ -5,8 +5,11 @@ Dispatches OpenAI function-calling tool calls to registered handlers.
 
 from openai.types.chat import ChatCompletionMessageFunctionToolCall
 
-from .config import MODEL, SYSTEM, client
+from .config import MAX_TOKENS, MODEL, SYSTEM, get_client
+from .logging import get_logger
 from .tools import TOOL_HANDLERS, TOOLS
+
+_log = get_logger("pendula.agent")
 
 
 def agent_loop(messages: list[dict[str, str]]) -> None:
@@ -15,14 +18,16 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
     Continues until the model returns a non-tool-call response.
     *messages* is mutated in-place with each exchange.
     """
+    client = get_client()
     while True:
         response = client.chat.completions.create(
             model=MODEL,
             messages=[{"role": "system", "content": SYSTEM}, *messages],  # type: ignore — dict works at runtime
             tools=TOOLS,
-            max_tokens=8000,
+            max_tokens=MAX_TOKENS,
         )
         msg = response.choices[0].message
+        _log.debug("agent.response", content=str(msg.content)[:200])
         messages.append(msg.model_dump())
 
         if not msg.tool_calls:
@@ -30,13 +35,11 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
 
         results = []
         for tc in msg.tool_calls:
-            # Only handle function tool calls (pydantic_function_tool)
             if not isinstance(tc, ChatCompletionMessageFunctionToolCall):
                 continue
             name = tc.function.name
-            print(f"\033[33m> {name}\033[0m")
+            _log.info("tool.call", tool=name)
 
-            # Look up (model, handler) in dispatch map
             entry = TOOL_HANDLERS.get(name)
             if entry is None:
                 output = f"Unknown: {name}"
@@ -45,7 +48,7 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
                 args = model.model_validate_json(tc.function.arguments)
                 output = handler(**dict(args))
 
-            print(str(output)[:200])
+            _log.info("tool.result", tool=name, length=len(output))
             results.append({"role": "tool", "tool_call_id": tc.id, "content": output})
 
         messages.extend(results)

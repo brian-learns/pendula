@@ -1,22 +1,81 @@
-"""Tool functions and Pydantic models for the Pendula coding agent.
+"""Tool handler functions and registration for the Pendula coding agent.
 
-Provides safe file operations, shell execution, glob matching,
-and typed Pydantic argument models used for OpenAI function-calling dispatch.
+Each handler is decorated with ``@tool`` which simultaneously:
+1. Creates an OpenAI ``pydantic_function_tool`` definition
+2. Registers the (Pydantic_model, handler) pair in ``TOOL_HANDLERS``
+3. Appends the tool definition to ``TOOLS``
+
+Usage
+-----
+    @tool(name="bash", description="Run a shell command.", model=BashArgs)
+    def run_bash(command: str) -> str:
+        ...
 """
 
+from __future__ import annotations
+
+import functools
 import subprocess
 from pathlib import Path
+from typing import Callable, Type
 
 import openai
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from .config import WORKDIR
+from .logging import get_logger, log_call
+from .models import BashArgs, EditFileArgs, GlobArgs, ReadFileArgs, WriteFileArgs
+
+# ═══════════════════════════════════════════════════════════
+#  Registry
+# ═══════════════════════════════════════════════════════════
+
+TOOLS: list = []  # filled by @tool decorator
+TOOL_HANDLERS: dict[str, tuple[Type[BaseModel], Callable]] = {}
+
+_log = get_logger("pendula.tools")
+
+
+def tool(name: str, description: str, model: Type[BaseModel]):
+    """Decorator: register a handler function as an OpenAI tool.
+
+    Parameters
+    ----------
+    name : str
+        Tool name sent to the LLM.
+    description : str
+        Description sent to the LLM.
+    model : Type[BaseModel]
+        Pydantic model class for validating arguments.
+    """
+
+    def decorator(fn):
+        """Register *fn* as a tool and return a logging-wrapped version."""
+        tool_def = openai.pydantic_function_tool(
+            name=name,
+            description=description,
+            model=model,
+        )
+        TOOLS.append(tool_def)
+        TOOL_HANDLERS[name] = (model, fn)
+
+        @functools.wraps(fn)
+        @log_call(_log, event=f"tool.{name}")
+        def wrapper(*args, **kwargs):
+            """Call the tool handler and return its result."""
+            return fn(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
 
 # ═══════════════════════════════════════════════════════════
 #  Tool implementations
 # ═══════════════════════════════════════════════════════════
 
 
+@tool(name="bash", description="Run a shell command.", model=BashArgs)
 def run_bash(command: str) -> str:
     """Execute a shell command inside the workspace directory.
 
@@ -52,6 +111,7 @@ def safe_path(p: str) -> Path:
     return path
 
 
+@tool(name="read_file", description="Read file contents.", model=ReadFileArgs)
 def run_read(path: str, limit: int | None = None) -> str:
     """Read a file and return its contents, optionally truncated to *limit* lines."""
     try:
@@ -63,6 +123,11 @@ def run_read(path: str, limit: int | None = None) -> str:
         return f"Error: {e}"
 
 
+@tool(
+    name="write_file",
+    description="Write content to a file.",
+    model=WriteFileArgs,
+)
 def run_write(path: str, content: str) -> str:
     """Write *content* to *path*, creating parent directories if needed."""
     try:
@@ -74,6 +139,11 @@ def run_write(path: str, content: str) -> str:
         return f"Error: {e}"
 
 
+@tool(
+    name="edit_file",
+    description="Replace exact text in a file once.",
+    model=EditFileArgs,
+)
 def run_edit(path: str, old_text: str, new_text: str) -> str:
     """Replace the first occurrence of *old_text* with *new_text* in *path*."""
     try:
@@ -87,6 +157,7 @@ def run_edit(path: str, old_text: str, new_text: str) -> str:
         return f"Error: {e}"
 
 
+@tool(name="glob", description="Find files matching a glob pattern.", model=GlobArgs)
 def run_glob(pattern: str) -> str:
     """Find files matching a glob pattern inside the workspace."""
     import glob as g
@@ -100,77 +171,3 @@ def run_glob(pattern: str) -> str:
         return "\n".join(results) if results else "(no matches)"
     except Exception as e:
         return f"Error: {e}"
-
-
-# ═══════════════════════════════════════════════════════════
-#  Pydantic argument models for OpenAI function calling
-# ═══════════════════════════════════════════════════════════
-
-
-class BashArgs(BaseModel):
-    command: str = Field(..., description="The shell command to run.")
-
-
-class ReadFileArgs(BaseModel):
-    path: str = Field(..., description="The path to the file to read.")
-    limit: int | None = Field(
-        default=None, description="Maximum number of lines to return."
-    )
-
-
-class WriteFileArgs(BaseModel):
-    path: str = Field(..., description="The path to write to.")
-    content: str = Field(..., description="The content to write.")
-
-
-class EditFileArgs(BaseModel):
-    path: str = Field(..., description="The path to the file to edit.")
-    old_text: str = Field(..., description="The exact text to find and replace.")
-    new_text: str = Field(..., description="The replacement text.")
-
-
-class GlobArgs(BaseModel):
-    pattern: str = Field(..., description="The glob pattern to search for.")
-
-
-# ═══════════════════════════════════════════════════════════
-#  OpenAI tool definitions
-# ═══════════════════════════════════════════════════════════
-
-bash_tool = openai.pydantic_function_tool(
-    name="bash",
-    description="Run a shell command.",
-    model=BashArgs,
-)
-read_tool = openai.pydantic_function_tool(
-    name="read_file",
-    description="Read file contents.",
-    model=ReadFileArgs,
-)
-write_tool = openai.pydantic_function_tool(
-    name="write_file",
-    description="Write content to a file.",
-    model=WriteFileArgs,
-)
-edit_tool = openai.pydantic_function_tool(
-    name="edit_file",
-    description="Replace exact text in a file once.",
-    model=EditFileArgs,
-)
-glob_tool = openai.pydantic_function_tool(
-    name="glob",
-    description="Find files matching a glob pattern.",
-    model=GlobArgs,
-)
-
-TOOLS = [bash_tool, read_tool, write_tool, edit_tool, glob_tool]
-
-# Typed dispatch: each entry is (Pydantic_model, handler_fn)
-# Args parsed through model_validate_json() for validation
-TOOL_HANDLERS = {
-    "bash": (BashArgs, run_bash),
-    "read_file": (ReadFileArgs, run_read),
-    "write_file": (WriteFileArgs, run_write),
-    "edit_file": (EditFileArgs, run_edit),
-    "glob": (GlobArgs, run_glob),
-}

@@ -5,12 +5,14 @@ from unittest.mock import patch
 
 import pytest
 
-from pendula.tools import (
+from pendula.models import (
     BashArgs,
     EditFileArgs,
     GlobArgs,
     ReadFileArgs,
     WriteFileArgs,
+)
+from pendula.tools import (
     TOOLS,
     TOOL_HANDLERS,
     run_bash,

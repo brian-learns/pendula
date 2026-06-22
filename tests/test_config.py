@@ -21,7 +21,19 @@ def test_system_prompt():
     assert str(config.WORKDIR) in config.SYSTEM
 
 
-def test_client_is_openai():
-    """client should be an openai.OpenAI instance."""
+def test_max_tokens_default():
+    """MAX_TOKENS should default to 8000."""
+    assert config.MAX_TOKENS == 8000
+
+
+def test_get_client():
+    """get_client() should return an openai.OpenAI instance."""
     from openai import OpenAI
-    assert isinstance(config.client, OpenAI)
+    assert isinstance(config.get_client(), OpenAI)
+
+
+def test_get_client_is_singleton():
+    """Repeated calls to get_client() should return the same object."""
+    c1 = config.get_client()
+    c2 = config.get_client()
+    assert c1 is c2
