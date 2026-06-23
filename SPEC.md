@@ -27,7 +27,8 @@ no lesson rewrites the previous one.
 | s05 — An agent without a plan drifts | ✅ Merged into `tools.py`, `agent.py`, `models.py` | ``todo_write`` tool + nag reminder |
 | s06 — Break large tasks into small ones with clean context | ✅ Merged into `subagent.py`, `tools.py`, `models.py` | ``task`` tool + sub-agent loop |
 | s07 — Load knowledge on demand, not upfront | ✅ Merged into `skills.py`, `tools.py`, `models.py`, `config.py`, `agent.py` | ``load_skill`` tool + skill catalog in SYSTEM |
-| 8–20 | ❌ Not started | Branches from `main` |
+| s08 — Context will fill up, have a way to make room | ✅ Merged into `compact.py`, `tools.py`, `models.py`, `agent.py` | 4-layer compression pipeline + reactive compact |
+| 9–20 | ❌ Not started | Branches from `main` |
 
 ## Lesson roadmap (s05–s20)
 
@@ -65,9 +66,11 @@ hooks.py   (depends on .config)
     ↓
 skills.py  (depends on .config)
     ↓
+compact.py (depends on .config)
+    ↓
 subagent.py (depends on .config, .hooks, .tools via deferred import)
     ↓
-agent.py   (depends on .config, .hooks, .tools, .logging)
+agent.py   (depends on .config, .hooks, .tools, .logging, .skills, .compact)
     ↓
 repl.py    (depends on .agent, .hooks)
     ↓
@@ -83,8 +86,9 @@ src/pendula/
 ├── tools.py       — tool handlers + @tool decorator + registries
 ├── hooks.py       — hook registry + built-in permission hooks
 ├── skills.py      — skill loading + registry + enriched SYSTEM
+├── compact.py     — context compression (4-layer pipeline)
 ├── subagent.py    — sub-agent loop + spawn_subagent
-├── agent.py       — agent loop (dispatch loop + hook triggers + nag reminder)
+├── agent.py       — agent loop (dispatch + compression + nag reminder)
 ├── logging.py     — structured logging (structlog)
 ├── repl.py        — reusable REPL loop
 ├── cli.py         — CLI entry point with --loglevel
@@ -96,7 +100,7 @@ src/pendula/
 
 - **`make test`** must pass before merge (ruff + bandit + vulture + refurb + interrogate + pytest)
 - **`HACKERS.md`** governs AI-agent and human coding rules
-- **No circular imports** — dependency direction is `config → models → tools → hooks → skills → subagent → agent → repl → cli`
+- **No circular imports** — dependency direction is `config → models → tools → hooks → skills → compact → subagent → agent → repl → cli`
 - **New lessons add modules, never rewrite existing ones**
 - **`s02.py` is gone** — all code lives in the module structure above
 - **Branch per lesson** — branches are named `s<number>_<descriptor>`

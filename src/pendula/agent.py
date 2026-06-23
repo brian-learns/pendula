@@ -4,12 +4,28 @@ Dispatches OpenAI function-calling tool calls to registered handlers.
 Hook calls are inserted at key points:
 - ``PreToolUse`` / ``PostToolUse`` around each tool execution
 - ``Stop`` when the loop exits
+
+Context compression runs before each LLM call:
+- L3: tool_result_budget (persist large results to disk)
+- L1: snip_compact (trim middle messages)
+- L2: micro_compact (old result placeholders)
+- L4: compact_history (LLM summary, only if still over threshold)
+
+If the API returns prompt_too_long, reactive_compact kicks in.
 """
 
 from types import SimpleNamespace
 
 from openai.types.chat import ChatCompletionMessageFunctionToolCall
 
+from .compact import (
+    MAX_REACTIVE_RETRIES,
+    THRESHOLD_CHARS,
+    compact_history,
+    estimate_token_count,
+    reactive_compact,
+    run_compression_pipeline,
+)
 from .config import MAX_TOKENS, MODEL, get_client
 from .hooks import trigger_hooks
 from .logging import get_logger
@@ -29,19 +45,43 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
     Hook events fire around tool execution (``PreToolUse``, ``PostToolUse``)
     and when the loop ends (``Stop``).
 
+    Context compression runs before each LLM call:
+    - budget → snip → micro (0 API calls)
+    - compact_history (1 API call) if still over threshold
+    - reactive_compact on prompt_too_long error
+
     A nag reminder is injected when the model hasn't called ``todo_write``
     for ``REMINDER_INTERVAL`` consecutive rounds.
     """
     client = get_client()
     rounds_since_todo = 0
+    reactive_retries = 0
 
     while True:
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "system", "content": SYSTEM}, *messages],  # type: ignore — dict works at runtime
-            tools=TOOLS,
-            max_tokens=MAX_TOKENS,
-        )
+        # ── Compression pipeline (cheap first, expensive last) ──
+        messages[:] = run_compression_pipeline(messages)
+
+        if estimate_token_count(messages) > THRESHOLD_CHARS:
+            messages[:] = compact_history(messages)
+
+        # ── LLM call ──
+        try:
+            response = client.chat.completions.create(
+                model=MODEL,
+                messages=[{"role": "system", "content": SYSTEM}, *messages],  # type: ignore — dict works at runtime
+                tools=TOOLS,
+                max_tokens=MAX_TOKENS,
+            )
+            reactive_retries = 0
+        except Exception as exc:
+            _log.warning("agent.error", error=str(exc)[:200])
+            ptl = "prompt_too_long"
+            if ptl in str(exc).lower() and reactive_retries < MAX_REACTIVE_RETRIES:
+                messages[:] = reactive_compact(messages)
+                reactive_retries += 1
+                continue
+            raise
+
         msg = response.choices[0].message
         _log.debug("agent.response", content=str(msg.content)[:200])
         messages.append(msg.model_dump())
@@ -56,6 +96,7 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
 
         results = []
         called_todo = False
+        did_compact = False
 
         for tc in msg.tool_calls:
             if not isinstance(tc, ChatCompletionMessageFunctionToolCall):
@@ -65,6 +106,19 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
 
             if name == "todo_write":
                 called_todo = True
+
+            # ── Special: compact tool triggers history compaction ──
+            if name == "compact":
+                messages[:] = compact_history(messages)
+                results.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tc.id,
+                        "content": "[Compacted. History summarized.]",
+                    }
+                )
+                did_compact = True
+                continue
 
             entry = TOOL_HANDLERS.get(name)
             if entry is None:
@@ -90,6 +144,10 @@ def agent_loop(messages: list[dict[str, str]]) -> None:
             results.append({"role": "tool", "tool_call_id": tc.id, "content": output})
 
         messages.extend(results)
+
+        # ── If compact was called, start fresh with compacted context ──
+        if did_compact:
+            continue
 
         # Nag reminder: if todo_write wasn't called this round, increment counter
         if called_todo:
