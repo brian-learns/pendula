@@ -28,6 +28,7 @@ from .models import (
     BashArgs,
     EditFileArgs,
     GlobArgs,
+    LoadSkillArgs,
     ReadFileArgs,
     TaskArgs,
     TodoWriteArgs,
@@ -243,3 +244,24 @@ def _register_task_tool() -> None:
 
 
 _register_task_tool()
+
+
+# ═══════════════════════════════════════════════════════════
+#  Load-skill tool (no circular dependency — skills.py imports only config)
+# ═══════════════════════════════════════════════════════════
+
+
+@tool(
+    name="load_skill",
+    description="Load a skill's full instructions. Use this when you need "
+    "detailed guidance for a specific task.",
+    model=LoadSkillArgs,
+)
+def run_load_skill(name: str) -> str:
+    """Return the full content of a skill by *name*.
+
+    Delegates to ``skills.load_skill`` for registry lookup.
+    """
+    from .skills import load_skill
+
+    return load_skill(name)

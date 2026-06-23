@@ -198,14 +198,14 @@ class TestPydanticModels:
 
 
 class TestToolDefinitions:
-    def test_TOOLS_has_seven(self):
-        assert len(TOOLS) == 7
+    def test_TOOLS_has_eight(self):
+        assert len(TOOLS) == 8
 
-    def test_TOOL_HANDLERS_has_seven(self):
-        assert len(TOOL_HANDLERS) == 7
+    def test_TOOL_HANDLERS_has_eight(self):
+        assert len(TOOL_HANDLERS) == 8
 
     def test_TOOL_HANDLERS_keys(self):
-        expected = {"bash", "read_file", "write_file", "edit_file", "glob", "todo_write", "task"}
+        expected = {"bash", "read_file", "write_file", "edit_file", "glob", "todo_write", "task", "load_skill"}
         assert set(TOOL_HANDLERS) == expected
 
     def test_handler_entries_are_pairs(self):

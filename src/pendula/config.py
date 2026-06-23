@@ -31,6 +31,31 @@ SYSTEM = (
     "If you receive a reminder to update todos, do so immediately."
 )
 
+
+def build_system(catalog: str = "") -> str:
+    """Return the system prompt with an optional skill *catalog* prepended.
+
+    Parameters
+    ----------
+    catalog : str
+        A string listing available skills, or empty for no skills.
+    """
+    base = (
+        f"You are a coding agent at {WORKDIR}. "
+        "Use tools to solve tasks. Act, don't explain.\n\n"
+        "Before starting any complex task, use todo_write to list the steps. "
+        "Update todo statuses as you work. "
+        "If you receive a reminder to update todos, do so immediately."
+    )
+    if catalog:
+        base = (
+            f"Skills available:\n{catalog}\n\n"
+            "Use load_skill to get full details when needed.\n\n"
+            f"{base}"
+        )
+    return base
+
+
 # Maximum tokens per completion — can be overridden via env
 MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "8000"))
 

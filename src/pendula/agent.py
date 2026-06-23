@@ -10,9 +10,10 @@ from types import SimpleNamespace
 
 from openai.types.chat import ChatCompletionMessageFunctionToolCall
 
-from .config import MAX_TOKENS, MODEL, SYSTEM, get_client
+from .config import MAX_TOKENS, MODEL, get_client
 from .hooks import trigger_hooks
 from .logging import get_logger
+from .skills import SYSTEM
 from .tools import TOOL_HANDLERS, TOOLS
 
 _log = get_logger("pendula.agent")
