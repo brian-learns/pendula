@@ -69,3 +69,12 @@ class LoadSkillArgs(BaseModel):
     """Input model for the ``load_skill`` tool."""
 
     name: str = Field(..., description="The skill name to load.")
+
+
+class CompactArgs(BaseModel):
+    """Input model for the ``compact`` tool."""
+
+    note: str = Field(
+        default="",
+        description="Optional note about why compaction was requested.",
+    )

@@ -26,6 +26,7 @@ from .config import WORKDIR
 from .logging import get_logger, log_call
 from .models import (
     BashArgs,
+    CompactArgs,
     EditFileArgs,
     GlobArgs,
     LoadSkillArgs,
@@ -265,3 +266,24 @@ def run_load_skill(name: str) -> str:
     from .skills import load_skill
 
     return load_skill(name)
+
+
+# ═══════════════════════════════════════════════════════════
+#  Compact tool (model-initiated compaction)
+# ═══════════════════════════════════════════════════════════
+
+
+@tool(
+    name="compact",
+    description="Compress the conversation history to free context space. "
+    "Call this when context is getting full.",
+    model=CompactArgs,
+)
+def run_compact(note: str = "") -> str:
+    """Trigger compact_history to summarize and replace the message list.
+
+    *note* is an optional user-supplied reason for compaction.
+    """
+
+    _ = note  # informational, compaction always proceeds
+    return "[Compacted. History summarized.]"

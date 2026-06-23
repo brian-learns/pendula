@@ -16,8 +16,9 @@ They keep the codebase consistent, safe, and easy to maintain.
 | `tools.py` | Tool handler functions + registry + ``CURRENT_TODOS`` | `.config`, `.models` |
 | `hooks.py` | Hook registry + built-in permission hooks | `.config` |
 | `skills.py` | Skill loading + registry + ``SYSTEM`` | `.config` |
+| `compact.py` | Context compression pipeline (4 layers) | `.config` |
 | `subagent.py` | Sub-agent loop + ``spawn_subagent`` | `.config`, `.hooks`, `.tools` (deferred) |
-| `agent.py` | Agent loop (dispatch + hook triggers + nag reminder) | `.config`, `.hooks`, `.tools`, `.skills` |
+| `agent.py` | Agent loop (dispatch + compression + nag reminder) | `.config`, `.hooks`, `.tools`, `.skills`, `.compact` |
 | `repl.py` | Reusable REPL loop | `.agent` |
 | `cli.py` | CLI entry point (argparse → `run_repl()`) | `.repl`, `.logging` |
 
