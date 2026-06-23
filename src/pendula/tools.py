@@ -171,9 +171,7 @@ def run_glob(pattern: str) -> str:
 
     try:
         results = [
-            match
-            for match in g.glob(pattern, root_dir=WORKDIR)
-            if (WORKDIR / match).resolve().is_relative_to(WORKDIR)
+            match for match in g.glob(pattern, root_dir=WORKDIR) if (WORKDIR / match).resolve().is_relative_to(WORKDIR)
         ]
         return "\n".join(results) if results else "(no matches)"
     except Exception as e:
@@ -195,8 +193,7 @@ def reset_todos() -> None:
 
 @tool(
     name="todo_write",
-    description="Create and manage a task list. Call this first to plan steps, "
-    "then update statuses as you work.",
+    description="Create and manage a task list. Call this first to plan steps, then update statuses as you work.",
     model=TodoWriteArgs,
 )
 def run_todo_write(todos: list) -> str:
@@ -236,8 +233,7 @@ def _register_task_tool() -> None:
 
     task_def = openai.pydantic_function_tool(
         name="task",
-        description="Launch a sub-agent to handle a complex subtask. "
-        "Returns only the final conclusion.",
+        description="Launch a sub-agent to handle a complex subtask. Returns only the final conclusion.",
         model=TaskArgs,
     )
     TOOLS.append(task_def)
@@ -254,8 +250,7 @@ _register_task_tool()
 
 @tool(
     name="load_skill",
-    description="Load a skill's full instructions. Use this when you need "
-    "detailed guidance for a specific task.",
+    description="Load a skill's full instructions. Use this when you need detailed guidance for a specific task.",
     model=LoadSkillArgs,
 )
 def run_load_skill(name: str) -> str:
@@ -275,8 +270,7 @@ def run_load_skill(name: str) -> str:
 
 @tool(
     name="compact",
-    description="Compress the conversation history to free context space. "
-    "Call this when context is getting full.",
+    description="Compress the conversation history to free context space. Call this when context is getting full.",
     model=CompactArgs,
 )
 def run_compact(note: str = "") -> str:

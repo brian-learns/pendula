@@ -18,9 +18,7 @@ class ReadFileArgs(BaseModel):
     """Input model for the ``read_file`` tool."""
 
     path: str = Field(..., description="The path to the file to read.")
-    limit: int | None = Field(
-        default=None, description="Maximum number of lines to return."
-    )
+    limit: int | None = Field(default=None, description="Maximum number of lines to return.")
 
 
 class WriteFileArgs(BaseModel):
@@ -60,9 +58,7 @@ class TodoWriteArgs(BaseModel):
 class TaskArgs(BaseModel):
     """Input model for the ``task`` tool."""
 
-    description: str = Field(
-        ..., description="The subtask description for the sub-agent."
-    )
+    description: str = Field(..., description="The subtask description for the sub-agent.")
 
 
 class LoadSkillArgs(BaseModel):

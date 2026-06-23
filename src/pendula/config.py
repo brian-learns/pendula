@@ -48,11 +48,7 @@ def build_system(catalog: str = "") -> str:
         "If you receive a reminder to update todos, do so immediately."
     )
     if catalog:
-        base = (
-            f"Skills available:\n{catalog}\n\n"
-            "Use load_skill to get full details when needed.\n\n"
-            f"{base}"
-        )
+        base = f"Skills available:\n{catalog}\n\nUse load_skill to get full details when needed.\n\n{base}"
     return base
 
 
