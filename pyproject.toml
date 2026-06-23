@@ -37,7 +37,9 @@ dev = [
 
 
 [tool.ruff]
-line-length = 88
+line-length = 120
+
+[tool.ruff.lint]
 select = [
     "E",   # Pycodestyle errors
     "F",   # Pyflakes (catches undefined names / unused variables)
@@ -45,12 +47,13 @@ select = [
     "S",   # Bandit Automated Security checks
     "I",   # Isort (enforces clean import sorting structures)
     "N",   # PEP8 Naming convention enforcement
-    "RUF" # Ruff-specific absolute modern rules
+    "RUF"  # Ruff-specific absolute modern rules
+]
+ignore = [
+    "S101", # Allows 'assert' statements for pytest modules
+    "E501"  # Let the formatter handle long agent lines, don't trigger lint errors
 ]
 
-[tool.ruff.lint]
-select = ["E", "F", "B", "S", "I", "N", "RUF"]
-ignore = ["S101"] # Allows 'assert' statements for pytest modules
 
 [tool.bandit]
 skips = ["B101", "B404", "B602"]

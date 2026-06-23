@@ -70,9 +70,7 @@ def list_skills() -> str:
     """Generate a catalog string from the current registry."""
     if not SKILL_REGISTRY:
         return "(no skills loaded)"
-    return "\n".join(
-        f"- **{s['name']}**: {s['description']}" for s in SKILL_REGISTRY.values()
-    )
+    return "\n".join(f"- **{s['name']}**: {s['description']}" for s in SKILL_REGISTRY.values())
 
 
 # Build the enriched system prompt with the skill catalog

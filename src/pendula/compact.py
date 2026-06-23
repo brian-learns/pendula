@@ -112,9 +112,7 @@ def tool_result_budget(
         blocks = [{"type": "text", "text": content}]
 
     # Find tool_result blocks
-    result_blocks = [
-        (i, b) for i, b in enumerate(blocks) if b.get("type") == "tool_result"
-    ]
+    result_blocks = [(i, b) for i, b in enumerate(blocks) if b.get("type") == "tool_result"]
     if not result_blocks:
         return messages
 
@@ -123,17 +121,13 @@ def tool_result_budget(
         return messages
 
     # Sort by size descending
-    ranked = sorted(
-        result_blocks, key=lambda p: len(str(p[1].get("content", ""))), reverse=True
-    )
+    ranked = sorted(result_blocks, key=lambda p: len(str(p[1].get("content", ""))), reverse=True)
 
     for _, block in ranked:
         if total <= max_bytes:
             break
         content_str = str(block.get("content", ""))
-        block["content"] = persist_large_output(
-            block.get("tool_use_id", ""), content_str
-        )
+        block["content"] = persist_large_output(block.get("tool_use_id", ""), content_str)
         total = sum(len(str(b.get("content", ""))) for _, b in result_blocks)
 
     messages[-1]["content"] = blocks
@@ -166,9 +160,7 @@ def snip_compact(
             head_end += 1
 
     # Ensure tool_result at tail boundary has its tool_use
-    if _is_tool_result_message(messages[tail_start]) and _message_has_tool_use(
-        messages[tail_start - 1]
-    ):
+    if _is_tool_result_message(messages[tail_start]) and _message_has_tool_use(messages[tail_start - 1]):
         tail_start -= 1
 
     snipped = tail_start - head_end
@@ -189,9 +181,7 @@ def micro_compact(messages: list[dict]) -> list[dict]:
 
     Keeps ``KEEP_RECENT_TOOL_RESULTS`` most recent tool_results intact.
     """
-    tool_results = [
-        (i, m) for i, m in enumerate(messages) if _is_tool_result_message(m)
-    ]
+    tool_results = [(i, m) for i, m in enumerate(messages) if _is_tool_result_message(m)]
     if len(tool_results) <= KEEP_RECENT_TOOL_RESULTS:
         return messages
 
@@ -253,9 +243,7 @@ def reactive_compact(messages: list[dict]) -> list[dict]:
     summary = summarize_history(messages)
 
     tail_start = max(0, len(messages) - 5)
-    if _is_tool_result_message(messages[tail_start]) and _message_has_tool_use(
-        messages[tail_start - 1]
-    ):
+    if _is_tool_result_message(messages[tail_start]) and _message_has_tool_use(messages[tail_start - 1]):
         tail_start -= 1
 
     return [
