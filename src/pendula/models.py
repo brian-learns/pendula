@@ -63,3 +63,9 @@ class TaskArgs(BaseModel):
     description: str = Field(
         ..., description="The subtask description for the sub-agent."
     )
+
+
+class LoadSkillArgs(BaseModel):
+    """Input model for the ``load_skill`` tool."""
+
+    name: str = Field(..., description="The skill name to load.")

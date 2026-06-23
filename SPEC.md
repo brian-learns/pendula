@@ -26,7 +26,8 @@ no lesson rewrites the previous one.
 | s04 — Hook around the loop, never rewrite the loop | ✅ Merged into `hooks.py`, `agent.py`, `repl.py` | Hook system + permission hooks (absorbed s03) |
 | s05 — An agent without a plan drifts | ✅ Merged into `tools.py`, `agent.py`, `models.py` | ``todo_write`` tool + nag reminder |
 | s06 — Break large tasks into small ones with clean context | ✅ Merged into `subagent.py`, `tools.py`, `models.py` | ``task`` tool + sub-agent loop |
-| 7–20 | ❌ Not started | Branches from `main` |
+| s07 — Load knowledge on demand, not upfront | ✅ Merged into `skills.py`, `tools.py`, `models.py`, `config.py`, `agent.py` | ``load_skill`` tool + skill catalog in SYSTEM |
+| 8–20 | ❌ Not started | Branches from `main` |
 
 ## Lesson roadmap (s05–s20)
 
@@ -62,6 +63,8 @@ tools.py   (depends on .config, .models, .logging)
     ↓
 hooks.py   (depends on .config)
     ↓
+skills.py  (depends on .config)
+    ↓
 subagent.py (depends on .config, .hooks, .tools via deferred import)
     ↓
 agent.py   (depends on .config, .hooks, .tools, .logging)
@@ -79,6 +82,7 @@ src/pendula/
 ├── models.py      — Pydantic argument models for tools
 ├── tools.py       — tool handlers + @tool decorator + registries
 ├── hooks.py       — hook registry + built-in permission hooks
+├── skills.py      — skill loading + registry + enriched SYSTEM
 ├── subagent.py    — sub-agent loop + spawn_subagent
 ├── agent.py       — agent loop (dispatch loop + hook triggers + nag reminder)
 ├── logging.py     — structured logging (structlog)
@@ -92,7 +96,7 @@ src/pendula/
 
 - **`make test`** must pass before merge (ruff + bandit + vulture + refurb + interrogate + pytest)
 - **`HACKERS.md`** governs AI-agent and human coding rules
-- **No circular imports** — dependency direction is `config → models → tools → hooks → subagent → agent → repl → cli`
+- **No circular imports** — dependency direction is `config → models → tools → hooks → skills → subagent → agent → repl → cli`
 - **New lessons add modules, never rewrite existing ones**
 - **`s02.py` is gone** — all code lives in the module structure above
 - **Branch per lesson** — branches are named `s<number>_<descriptor>`
